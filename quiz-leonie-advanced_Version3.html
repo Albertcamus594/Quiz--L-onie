@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Quiz Civique — Léonie (Version Avancée)</title>
+
+  <!-- Fonts (Google Fonts) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Georgia:ital@0;1&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg-1: #0b0810;
+      --bg-2: #24192b;
+      --glass: rgba(255,255,255,0.035);
+      --card-border: rgba(220,215,230,0.06);
+      --accent-gold: #d4af37;
+      --accent-rose: #dca399;
+      --muted: #cbbfd0;
+      --success: #4fb06a;
+      --danger: #c95d5d;
+      --focus: #79c7ff;
+      --max-width: 920px;
+      --radius: 16px;
+      --shadow: 0 12px 35px rgba(0,0,0,0.6);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Georgia, serif;
+      background:linear-gradient(135deg,var(--bg-1),var(--bg-2));
+      color:#fff;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:28px;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.45;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    .wrap{
+      width:100%;
+      max-width:var(--max-width);
+      margin:0 auto;
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      border:1px solid var(--card-border);
+      padding:28px;
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(8px) saturate(120%);
+    }
+
+    .header{
+      display:flex;
+      gap:18px;
+      align-items:center;
+      margin-bottom:12px;
+    }
+
+    .brand{
+      width:72px;height:72px;border-radius:14px;
+      display:flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,var(--accent-gold),var(--accent-rose));
+      color:#141118;font-weight:700;font-size:22px;font-family:Georgia, serif;
+      box-shadow:0 8px 24px rgba(0,0,0,0.45);
+    }
+
+    h1{font-family:Georgia, serif;margin:0;font-size:20px}
+    .subtitle{color:var(--muted);margin-top:6px;font-size:14px}
+
+    .controls{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+    .btn{
+      padding:12px 18px;border-radius:12px;border:none;cursor:pointer;font-weight:600;
+      font-size:14px;
+    }
+    .btn-primary{background:linear-gradient(135deg,var(--accent-gold),#bfa02c);color:#141118}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+    .btn-soft{background:rgba(255,255,255,0.02);border-radius:10px;color:var(--muted);padding:8px 12px}
+
+    .lead{color:var(--muted);margin:12px 0 18px;font-size:15px}
+
+    /* Quiz area */
+    .quiz-wrap{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-top:12px}
+    @media (max-width:980px){ .quiz-wrap{grid-template-columns:1fr} }
+
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+    .panel-left{min-height:380px}
+    .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;color:var(--muted);font-size:13px}
+    .progress-bar{height:8px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden}
+    .progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent-gold),var(--accent-rose));transition:width .3s ease}
+
+    .question{font-family:Georgia, serif;font-size:22px;margin:18px 0;color:#fff}
+    .options{display:flex;flex-direction:column;gap:12px}
+    .option{
+      background:rgba(255,255,255,0.02);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:14px;border-radius:12px;text-align:left;cursor:pointer;font-size:15px;
+      transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+    }
+    .option:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.45)}
+    .option.selected{background:rgba(220,163,153,0.14);border-color:var(--accent-rose);box-shadow:0 10px 30px rgba(220,163,153,0.06)}
+    .option:focus{outline:none;box-shadow:0 0 0 4px rgba(121,199,255,0.12);border-color:var(--focus)}
+
+    .navs{display:flex;justify-content:space-between;gap:12px;margin-top:18px}
+    .small{font-size:13px;color:var(--muted)}
+
+    /* right column */
+    .summary{display:flex;flex-direction:column;gap:12px}
+    .score{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px}
+    .score-circle{width:120px;height:120px;border-radius:999px;border:3px solid var(--accent-gold);display:flex;align-items:center;justify-content:center;background:rgba(212,175,55,0.03)}
+    .score-number{font-family:Georgia, serif;font-size:36px;color:var(--accent-gold);font-weight:700}
+    .score-label{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+
+    .actions{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .toggle{display:flex;align-items:center;gap:10px}
+
+    .review{margin-top:8px;max-height:320px;overflow:auto;padding:8px;border-radius:8px;background:rgba(255,255,255,0.01)}
+    .review-item{padding:10px;border-radius:10px;margin-bottom:8px;background:rgba(255,255,255,0.02)}
+    .review-item.correct{border-left:4px solid var(--success)}
+    .review-item.incorrect{border-left:4px solid var(--danger)}
+
+    /* footer */
+    .footer{margin-top:16px;color:var(--muted);font-size:13px;text-align:center}
+
+    /* toast */
+    .toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(120px);background:rgba(20,17,24,0.92);padding:10px 16px;border-radius:999px;border:1px solid var(--accent-gold);color:#fff;opacity:0;pointer-events:none;transition:all .22s}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+    /* confetti canvas */
+    #confetti-canvas{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:1200}
+
+    /* reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      *{transition:none!important;animation:none!important}
+      #confetti-canvas{display:none!important}
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <div class="wrap card" role="application" aria-labelledby="quizTitle">
+    <div class="header">
+      <div class="brand" aria-hidden="true">Q</div>
+      <div>
+        <h1 id="quizTitle">Quiz civique — Préparation naturalisation (Léonie)</h1>
+        <div class="subtitle">30 questions essentielles — explications détaillées & partage sécurisé</div>
+      </div>
+    </div>
+
+    <p class="lead">Ce quiz est conçu pour t'entraîner aux questions civiques de la naturalisation française. Les explications complètes sont affichées après chaque question et dans le récapitulatif final. Tes réponses restent stockées localement — tu peux les envoyer par WhatsApp ou par e‑mail à la fin.</p>
+
+    <!-- Controls & quick actions -->
+    <div class="controls">
+      <button id="startBtn" class="btn btn-primary" type="button">Commencer le quiz</button>
+      <button id="previewBtn" class="btn btn-ghost" type="button">Voir la liste des questions</button>
+      <button id="printBtn" class="btn btn-ghost" type="button">Générer PDF / Imprimer</button>
+      <button id="downloadJson" class="btn btn-ghost" type="button">Télécharger réponses (JSON)</button>
+
+      <label class="btn-soft" style="margin-left:auto">
+        <input id="autoSendCheckbox" type="checkbox" style="margin-right:8px" /> Envoyer automatiquement (WhatsApp) à la fin
+      </label>
+    </div>
+
+    <div class="quiz-wrap" aria-live="polite">
+      <!-- left: questions -->
+      <div class="panel panel-left" id="panel-left">
+        <div class="meta">
+          <div id="progressText" class="small">Question 1/30</div>
+          <div id="categoryText" class="small">Catégorie</div>
+        </div>
+
+        <div class="progress-bar" aria-hidden="true" title="Progression">
+          <div id="progressFill" class="progress-fill" style="width:0%"></div>
+        </div>
+
+        <div class="question" id="questionText">Chargement...</div>
+
+        <div class="options" id="optionsContainer" role="list" aria-label="Choix de réponse"></div>
+
+        <div id="explanationBox" class="panel" style="margin-top:12px;display:none">
+          <div style="font-weight:700;margin-bottom:8px">Explication</div>
+          <div id="explanationText" class="small" style="color:var(--rose)"></div>
+        </div>
+
+        <div class="navs">
+          <button id="prevBtn" class="btn btn-ghost" type="button">← Précédent</button>
+          <div style="display:flex;gap:10px">
+            <button id="skipBtn" class="btn btn-ghost" type="button">Sauter</button>
+            <button id="nextBtn" class="btn btn-primary" type="button">Suivant →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: summary -->
+      <aside class="panel" aria-label="Résumé">
+        <div class="score">
+          <div class="score-circle" aria-hidden="false">
+            <div class="score-number" id="scoreNumber">0/30</div>
+          </div>
+          <div class="score-label">Votre progression</div>
+        </div>
+
+        <div class="actions">
+          <button id="whatsappBtn" class="btn btn-primary" type="button">Préparer WhatsApp (prérempli)</button>
+          <button id="emailBtn" class="btn btn-ghost" type="button">Préparer E‑mail (prérempli)</button>
+          <button id="copyBtn" class="btn btn-ghost" type="button">Copier résumé</button>
+          <button id="resetBtn" class="btn btn-ghost" type="button">Recommencer</button>
+        </div>
+
+        <div style="margin-top:12px">
+          <label class="small">Numéro WhatsApp destinataire (sans +)</label>
+          <input id="recipientWhatsApp" placeholder="33614469188" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-top:6px" />
+
+          <label class="small" style="margin-top:10px;display:block">E‑mail destinataire</label>
+          <input id="recipientEmail" placeholder="moi@example.com" style="width:100%;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;margin-top:6px" />
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="small" style="margin-bottom:6px">Récapitulatif rapide</div>
+          <div id="miniReview" class="review small" aria-live="polite">Aucune réponse pour l'instant.</div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="footer small">Version avancée — accessible, responsive, et respectueuse des préférences système (prefers-reduced-motion).</div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Copié</div>
+
+  <script>
+    /****************************************************************
+     * Configuration par défaut (ton numéro fourni)
+     ****************************************************************/
+    const DEFAULT_WHATSAPP = "33614469188"; // ton numéro sans +
+    const DEFAULT_EMAIL = "";
+
+    /* ================== QUESTIONS (30) avec explications détaillées ================== */
+    const questions = [
+      { category:"Symboles & valeurs", question:"Quelle est la devise de la République française ?", options:["Liberté, fraternité, égalité","Liberté, égalité, fraternité","Unité, justice, fraternité"], answer:"Liberté, égalité, fraternité", explanation:"La devise officielle de la République française est « Liberté, égalité, fraternité ». Elle a ses racines dans la Révolution française et exprime des principes fondamentaux partagés par la société." },
+
+      { category:"Symboles & valeurs", question:"Quel est l'hymne national français ?", options:["La Marseillaise","Le Chant du Départ","La Parisienne"], answer:"La Marseillaise", explanation:"La Marseillaise a été écrite en 1792 par Claude Joseph Rouget de Lisle. Elle est devenue l'hymne national et symbolise la défense de la patrie et les valeurs républicaines." },
+
+      { category:"Dates & commémorations", question:"Quelle date est la fête nationale française ?", options:["1er mai","14 juillet","11 novembre"], answer:"14 juillet", explanation:"Le 14 juillet commémore la prise de la Bastille (1789) et la Fête de la Fédération (1790). C'est la fête nationale, marquée par un défilé militaire et des cérémonies." },
+
+      { category:"Institutions", question:"Qui est le chef de l'État en France ?", options:["Le Premier ministre","Le président de la République","Le président de l'Assemblée"], answer:"Le président de la République", explanation:"Le président de la République est le chef de l'État élu au suffrage universel direct. Il nomme le Premier ministre et représente la France à l'étranger." },
+
+      { category:"Institutions", question:"Qui nomme le Premier ministre ?", options:["Le Parlement","Le président de la République","Le Conseil constitutionnel"], answer:"Le président de la République", explanation:"Le président nomme le Premier ministre qui dirige ensuite le gouvernement et coordonne l'action publique." },
+
+      { category:"Institutions", question:"Combien de chambres compose le Parlement français ?", options:["Une seule","Deux","Trois"], answer:"Deux", explanation:"Le Parlement français est bicaméral : l'Assemblée nationale (députés) et le Sénat (sénateurs). Les deux assemblées participent au vote des lois." },
+
+      { category:"Institutions", question:"Quel est le rôle principal du Parlement ?", options:["Juges les affaires","Voter les lois","Nommer le président"], answer:"Voter les lois", explanation:"Le Parlement propose, discute et vote les lois. Il contrôle aussi l'action du gouvernement." },
+
+      { category:"Droits & devoirs", question:"Quel est l'âge légal pour voter en France ?", options:["16 ans","18 ans","21 ans"], answer:"18 ans", explanation:"Le droit de vote est accordé à tous les citoyens français majeurs, c'est‑à‑dire âgés de 18 ans ou plus." },
+
+      { category:"Principes", question:"Que signifie la laïcité en France ?", options:["L’État favorise une religion","Séparation État/religions et neutralité publique","Interdiction totale de religion"], answer:"Séparation État/religions et neutralité publique", explanation:"La laïcité signifie la séparation entre les institutions publiques et les religions, garantissant la liberté de conscience et le traitement neutre par l'État." },
+
+      { category:"Langue", question:"Quelle est la langue officielle de la République française ?", options:["Le français","Le français et l'anglais","Il n'y a pas de langue officielle"], answer:"Le français", explanation:"Le français est la langue officielle de la République (article 2 de la Constitution) et est utilisée pour les actes administratifs et législatifs." },
+
+      { category:"Histoire", question:"En quelle année a été proclamée la Déclaration des Droits de l'Homme et du Citoyen ?", options:["1789","1799","1871"], answer:"1789", explanation:"La Déclaration des Droits de l'Homme et du Citoyen date de 1789 et fixe des principes fondamentaux comme l'égalité devant la loi et la liberté." },
+
+      { category:"Histoire", question:"Quelles sont les couleurs du drapeau français ?", options:["Bleu, blanc, rouge","Bleu, blanc, vert","Rouge, blanc, noir"], answer:"Bleu, blanc, rouge", explanation:"Le drapeau tricolore (bleu, blanc, rouge) est le symbole national; il est hissé lors des cérémonies officielles." },
+
+      { category:"Justice", question:"Qu'est‑ce que la présomption d'innocence ?", options:["On est coupable jusqu'à preuve du contraire","On est innocent jusqu'à preuve du contraire","On est innocent seulement si l'on avoue"], answer:"On est innocent jusqu'à preuve du contraire", explanation:"La présomption d'innocence signifie que toute personne est considérée comme innocente tant que sa culpabilité n'a pas été établie par une décision de justice définitive." },
+
+      { category:"Collectivités", question:"Qui est le représentant de la commune ?", options:["Le préfet","Le maire","Le conseiller départemental"], answer:"Le maire", explanation:"Le maire est l'exécutif de la commune : il dirige la municipalité, signe les actes d'état civil et gère les services municipaux." },
+
+      { category:"Rôle public", question:"Quel est le rôle du maire ?", options:["Gérer la commune, l'état civil, la police municipale","Voter les lois","Nommer les juges"], answer:"Gérer la commune, l'état civil, la police municipale", explanation:"Le maire organise les services municipaux, tient l'état civil (naissances, mariages, décès) et assure le maintien de l'ordre local." },
+
+      { category:"Protection sociale", question:"À quoi sert la Sécurité sociale ?", options:["Protéger les travailleurs seulement","Gérer la police","Assurer protection sociale : santé, retraite, famille"], answer:"Assurer protection sociale : santé, retraite, famille", explanation:"La Sécurité sociale couvre les risques liés à la santé, la famille, la vieillesse et les accidents du travail, en assurant une solidarité collective." },
+
+      { category:"Constitution", question:"Sous quelle République vit la France aujourd'hui ?", options:["IIIe République","Ve République","IVe République"], answer:"Ve République", explanation:"La Ve République, instaurée en 1958, fixe l'organisation actuelle des institutions et renforce le rôle du président." },
+
+      { category:"Budget & contrôle", question:"Qui adopte le budget de l'État ?", options:["Le président seul","Le Parlement","Le Conseil d'État"], answer:"Le Parlement", explanation:"Le Parlement examine et vote la loi de finances qui fixe les recettes et dépenses de l'État." },
+
+      { category:"Suffrage", question:"Que signifie le suffrage universel ?", options:["Seuls certains peuvent voter","Tous les citoyens majeurs peuvent voter","Le suffrage par tirage au sort"], answer:"Tous les citoyens majeurs peuvent voter", explanation:"Le suffrage universel signifie que le vote est ouvert à l'ensemble des citoyens adultes, sans distinction, pour élire leurs représentants." },
+
+      { category:"Libertés", question:"Quelle liberté est protégée en France ?", options:["Liberté d'expression","Liberté d'ignorer la loi","Liberté de nuire aux autres"], answer:"Liberté d'expression", explanation:"La liberté d'expression est protégée, mais elle s'exerce dans le cadre de la loi (pas d'appels à la violence ou diffamation)." },
+
+      { category:"Justice", question:"Quelle est la plus haute juridiction pour les affaires civiles et pénales ?", options:["Conseil d'État","Cour de cassation","Tribunal administratif"], answer:"Cour de cassation", explanation:"La Cour de cassation est la plus haute juridiction en matière civile et pénale : elle vérifie la correcte application du droit." },
+
+      { category:"Gouvernement", question:"Quel est le rôle du Premier ministre ?", options:["Présider le Sénat","Diriger l'action du gouvernement et exécuter les lois","Voter les lois seul"], answer:"Diriger l'action du gouvernement et exécuter les lois", explanation:"Le Premier ministre dirige le gouvernement, coordonne les ministères et met en œuvre les lois votées par le Parlement." },
+
+      { category:"Conseil d'État", question:"À quoi sert le Conseil d'État ?", options:["Rendre la justice administrative et conseiller le gouvernement","Rendre la justice pénale","Gérer le budget"], answer:"Rendre la justice administrative et conseiller le gouvernement", explanation:"Le Conseil d'État juge les litiges entre les citoyens et l'administration, et conseille le gouvernement sur les projets de lois." },
+
+      { category:"Scolarité", question:"Quel principe s'applique dans les écoles publiques françaises ?", options:["Neutralité religieuse (laïcité)","Promotion d'une religion","Interdiction totale de toute expression culturelle"], answer:"Neutralité religieuse (laïcité)", explanation:"Les écoles publiques respectent la laïcité : enseignement neutre, liberté de conscience, et interdiction des manifestations religieuses ostentatoires pour maintenir l'égalité." },
+
+      { category:"Mandats", question:"Quelle est la durée du mandat présidentiel en France ?", options:["4 ans","5 ans","7 ans"], answer:"5 ans", explanation:"Le mandat présidentiel est de 5 ans (quinquennat) depuis la réforme de 2000." },
+
+      { category:"Histoire contemporaine", question:"Que commémore le 8 mai en France ?", options:["L'armistice de 1918","La victoire de 1945 (fin de la Seconde Guerre mondiale en Europe)","La Révolution de 1789"], answer:"La victoire de 1945 (fin de la Seconde Guerre mondiale en Europe)", explanation:"Le 8 mai célèbre la capitulation de l'Allemagne nazie en 1945 et la fin des hostilités en Europe." },
+
+      { category:"Démocratie directe", question:"Quel outil permet aux citoyens de décider directement ?", options:["Le référendum","Le sénat","Le Conseil constitutionnel"], answer:"Le référendum", explanation:"Le référendum permet au peuple de se prononcer directement sur un projet de loi ou une question constitutionnelle." },
+
+      { category:"Engagement civique", question:"Quel devoir est attendu de tout citoyen ?", options:["Payer ses impôts","Respecter uniquement sa famille","Ne jamais voter"], answer:"Payer ses impôts", explanation:"Payer des impôts est un devoir civique essentiel qui finance les services publics (éducation, santé, infrastructures...)."}
+    ];
+
+    /* ========== ÉTAT ========== */
+    const TOTAL = questions.length;
+    let currentIndex = 0;
+    let answers = {}; // index -> chosen option text
+    let explanationsShown = false;
+
+    /* ========== ÉLÉMENTS DOM ========== */
+    const startBtn = document.getElementById('startBtn');
+    const previewBtn = document.getElementById('previewBtn');
+    const printBtn = document.getElementById('printBtn');
+    const downloadJsonBtn = document.getElementById('downloadJson');
+    const autoSendCheckbox = document.getElementById('autoSendCheckbox');
+
+    const progressText = document.getElementById('progressText');
+    const categoryText = document.getElementById('categoryText');
+    const progressFill = document.getElementById('progressFill');
+    const questionText = document.getElementById('questionText');
+    const optionsContainer = document.getElementById('optionsContainer');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const skipBtn = document.getElementById('skipBtn');
+
+    const explanationBox = document.getElementById('explanationBox');
+    const explanationText = document.getElementById('explanationText');
+
+    const recipientWhatsAppInput = document.getElementById('recipientWhatsApp');
+    const recipientEmailInput = document.getElementById('recipientEmail');
+
+    const whatsappBtn = document.getElementById('whatsappBtn');
+    const emailBtn = document.getElementById('emailBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const miniReview = document.getElementById('miniReview');
+    const scoreNumber = document.getElementById('scoreNumber');
+
+    const toast = document.getElementById('toast');
+
+    /* ================== INITIALISATION ================== */
+    function init(){
+      // Prefill recipient with provided number
+      recipientWhatsAppInput.value = DEFAULT_WHATSAPP || "";
+      recipientEmailInput.value = DEFAULT_EMAIL || "";
+
+      startBtn.addEventListener('click', ()=>startQuiz());
+      previewBtn.addEventListener('click', ()=>alert(generateQuestionList()));
+      printBtn.addEventListener('click', ()=>window.print());
+      downloadJsonBtn.addEventListener('click', downloadJSON);
+
+      prevBtn.addEventListener('click', goPrev);
+      nextBtn.addEventListener('click', goNext);
+      skipBtn.addEventListener('click', ()=>{ currentIndex++; renderCurrent(); });
+
+      whatsappBtn.addEventListener('click', prepareWhatsApp);
+      emailBtn.addEventListener('click', prepareEmail);
+      copyBtn.addEventListener('click', copySummary);
+      resetBtn.addEventListener('click', resetAll);
+
+      // keyboard navigation
+      document.addEventListener('keydown', handleKeyNav);
+
+      loadProgress();
+    }
+
+    /* ========== RENDER / NAVIGATION ========== */
+    function startQuiz(){
+      // show the quiz area: set current 0 (unless restored)
+      const main = document.querySelector('.wrap');
+      // ensure visible by rendering current item
+      renderCurrent();
+      // scroll to top
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function renderCurrent(){
+      if(currentIndex < 0) currentIndex = 0;
+      if(currentIndex >= TOTAL){ finishQuiz(); return; }
+
+      const q = questions[currentIndex];
+      progressText.innerText = `Question ${currentIndex+1}/${TOTAL}`;
+      categoryText.innerText = q.category;
+      progressFill.style.width = `${Math.round((currentIndex/TOTAL)*100)}%`;
+
+      questionText.innerText = q.question;
+      explanationBox.style.display = 'none';
+      explanationText.innerText = '';
+
+      // options
+      optionsContainer.innerHTML = '';
+      q.options.forEach((opt, idx)=>{
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'option';
+        btn.innerText = opt;
+        btn.dataset.idx = idx;
+        btn.addEventListener('click', ()=>onSelect(opt, btn));
+        if(answers[currentIndex] === opt) btn.classList.add('selected');
+        optionsContainer.appendChild(btn);
+      });
+
+      // focus first option for keyboard users
+      setTimeout(()=>{ const f = optionsContainer.querySelector('.option'); if(f) f.focus(); }, 60);
+
+      updateMiniReview();
+      saveProgress();
+    }
+
+    function onSelect(optionText, btnEl){
+      // mark selection visually
+      const buttons = optionsContainer.querySelectorAll('.option');
+      buttons.forEach(b => b.classList.remove('selected'));
+      btnEl.classList.add('selected');
+
+      // store answer
+      answers[currentIndex] = optionText;
+
+      // show explanation immediately (detailed)
+      const explanation = questions[currentIndex].explanation || '';
+      explanationText.innerText = explanation;
+      explanationBox.style.display = 'block';
+      explanationsShown = true;
+
+      // after a short delay, advance automatically
+      setTimeout(()=>{
+        currentIndex++;
+        renderCurrent();
+      }, 500);
+    }
+
+    function goNext(){
+      if(currentIndex < TOTAL - 1) {
+        currentIndex++;
+        renderCurrent();
+      } else finishQuiz();
+    }
+
+    function goPrev(){
+      if(currentIndex > 0){
+        currentIndex--;
+        renderCurrent();
+      }
+    }
+
+    function finishQuiz(){
+      // compute score
+      let score = 0;
+      for(let i=0;i<TOTAL;i++){
+        if(answers[i] === questions[i].answer) score++;
+      }
+      scoreNumber.innerText = `${score}/${TOTAL}`;
+
+      // prepare review
+      const reviewHtml = document.createElement('div');
+      reviewHtml.innerHTML = `<div style="font-weight:700;margin-bottom:8px">Détails et explications</div>`;
+      // assemble review items
+      const reviewList = document.createElement('div');
+      reviewList.style.display = 'flex';
+      reviewList.style.flexDirection = 'column';
+      reviewList.style.gap = '8px';
+      for(let i=0;i<TOTAL;i++){
+        const q = questions[i];
+        const user = answers[i] || 'Aucune réponse';
+        const correct = user === q.answer;
+        const item = document.createElement('div');
+        item.className = 'review-item ' + (correct ? 'correct' : 'incorrect');
+        item.innerHTML = `<div style="font-weight:700">${i+1}. ${q.question}</div>
+                          <div class="small">Ta réponse: <strong>${user}</strong> ${correct ? '✅' : '❌'}</div>
+                          ${!correct ? `<div class="small">Bonne réponse: <strong>${q.answer}</strong></div>` : ''}
+                          <div class="small" style="margin-top:6px;color:var(--rose)">${q.explanation}</div>`;
+        reviewList.appendChild(item);
+      }
+      // show a modal-like results area by replacing left panel content
+      const leftPanel = document.getElementById('panel-left');
+      leftPanel.innerHTML = `<div style="text-align:center"><h2 style="font-family:Georgia, serif">Résultats</h2>
+                              <div style="margin:12px 0;font-size:18px;color:var(--muted)">Score : <strong>${score}/${TOTAL}</strong></div>
+                              <div style="margin-top:8px">${score === TOTAL ? 'Excellent — maîtrise parfaite !' : (score >= Math.ceil(TOTAL*0.7) ? 'Bon résultat — continue à t’entraîner.' : 'Poursuis tes révisions — quelques points à améliorer.')}</div>
+                              <div style="margin-top:16px">${generateShareButtonsHtml()}</div></div>`;
+
+      // append review under it
+      const reviewContainer = document.createElement('div');
+      reviewContainer.style.marginTop = '18px';
+      reviewContainer.appendChild(reviewList);
+      leftPanel.appendChild(reviewContainer);
+
+      // if auto-send checked, open whatsapp link automatically
+      if(document.getElementById('autoSendCheckbox').checked){
+        // small delay to let user see results
+        setTimeout(()=>{ prepareWhatsApp(true); }, 800);
+      }
+
+      // update mini review and score on right panel
+      updateMiniReview();
+      saveProgress();
+    }
+
+    function generateShareButtonsHtml(){
+      // returns small HTML for share actions (WhatsApp/email)
+      return `<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+                <button id="finishWhatsapp" class="btn btn-primary" type="button">Envoyer par WhatsApp</button>
+                <button id="finishEmail" class="btn btn-ghost" type="button">Envoyer par E‑mail</button>
+                <button id="finishCopy" class="btn btn-ghost" type="button">Copier le récapitulatif</button>
+              </div>
+              <div style="font-size:12px;color:var(--muted);margin-top:12px">Tu peux aussi télécharger un fichier JSON ou imprimer la page.</div>`;
+    }
+
+    /* ================== PARTAGE & EXPORT ================== */
+    function generateSummaryText(){
+      let score = 0;
+      for(let i=0;i<TOTAL;i++) if(answers[i] === questions[i].answer) score++;
+      let text = `📘 Quiz civique — Résultat pour Léonie\nScore: ${score}/${TOTAL}\n\n`;
+      for(let i=0;i<TOTAL;i++){
+        const q = questions[i];
+        const user = answers[i] || 'Pas de réponse';
+        const icon = (user === q.answer) ? '✅' : '❌';
+        text += `${i+1}. ${q.question}\nRéponse: ${user} ${icon}\nExplication: ${q.explanation}\n\n`;
+      }
+      text += `Bonne révision !`;
+      return text;
+    }
+
+    function prepareWhatsApp(auto=false){
+      const num = (recipientWhatsAppInput.value.trim() || DEFAULT_WHATSAPP).replace(/[^\d]/g,'');
+      if(!num){ alert('Merci d\'indiquer un numéro WhatsApp destinataire (sans +)'); return; }
+      const text = generateSummaryText();
+      const url = `https://wa.me/${encodeURIComponent(num)}?text=${encodeURIComponent(text)}`;
+      if(auto){
+        window.open(url,'_blank');
+        showToast('WhatsApp ouvert');
+      } else {
+        // open in new tab
+        window.open(url,'_blank');
+      }
+    }
+
+    function prepareEmail(){
+      const to = recipientEmailInput.value.trim() || DEFAULT_EMAIL;
+      if(!to){ alert('Merci d\'indiquer une adresse e‑mail destinataire'); return; }
+      const subject = encodeURIComponent('Quiz civique — Résultats pour Léonie');
+      const body = encodeURIComponent(generateSummaryText());
+      const mailto = `mailto:${encodeURIComponent(to)}?subject=${subject}&body=${body}`;
+      window.location.href = mailto;
+    }
+
+    function copySummary(){
+      const text = generateSummaryText();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(()=>showToast('Copié dans le presse‑papier'));
+      } else {
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.left='-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try{ document.execCommand('copy'); showToast('Copié'); }catch(e){ alert('Impossible de copier automatiquement.'); }
+        document.body.removeChild(ta);
+      }
+    }
+
+    function downloadJSON(){
+      const payload = { timestamp: new Date().toISOString(), questions, answers };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'quiz-leonie-reponses.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast('Téléchargement démarré');
+    }
+
+    /* ================== UTILS ================== */
+    function showToast(msg='Copié'){
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(()=>toast.classList.remove('show'),2200);
+    }
+
+    function generateQuestionList(){
+      return questions.map((q,i)=>`${i+1}. ${q.question}`).join('\n\n');
+    }
+
+    function updateMiniReview(){
+      const answered = Object.keys(answers).length;
+      const correct = Object.keys(answers).reduce((acc,k)=>{
+        const idx = Number(k);
+        if(answers[idx] === questions[idx].answer) return acc+1;
+        return acc;
+      },0);
+      miniReview.innerText = `Réponses: ${answered}/${TOTAL} • Correctes: ${correct}`;
+      scoreNumber.innerText = `${answered}/${TOTAL}`;
+    }
+
+    /* ================== PERSISTENCE ================== */
+    const STORAGE_KEY = 'quiz_leonie_adv_v1';
+    function saveProgress(){
+      try{
+        const payload = { currentIndex, answers, recipientWhatsApp: recipientWhatsAppInput.value.trim(), recipientEmail: recipientEmailInput.value.trim(), autoSend: autoSendCheckbox.checked };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      } catch(e){
+        console.warn('Impossible de sauvegarder localement', e);
+      }
+    }
+
+    function loadProgress(){
+      try{
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if(!raw) return;
+        const data = JSON.parse(raw);
+        if(typeof data.currentIndex === 'number') currentIndex = data.currentIndex;
+        answers = data.answers || {};
+        if(data.recipientWhatsApp) recipientWhatsAppInput.value = data.recipientWhatsApp;
+        if(data.recipientEmail) recipientEmailInput.value = data.recipientEmail;
+        if(typeof data.autoSend === 'boolean') autoSendCheckbox.checked = data.autoSend;
+        // if there is progress, render the saved question
+        if(Object.keys(answers).length > 0 || currentIndex > 0) renderCurrent();
+      } catch(e){ console.warn('Erreur lecture storage', e); }
+    }
+
+    function resetAll(){
+      if(!confirm('Effacer toutes les réponses sauvegardées et recommencer ?')) return;
+      answers = {}; currentIndex = 0;
+      try{ localStorage.removeItem(STORAGE_KEY); } catch(e){}
+      renderCurrent();
+      showToast('Données effacées');
+    }
+
+    /* ================== KEYBOARD NAVIGATION ================== */
+    function handleKeyNav(ev){
+      // only when options visible
+      if(document.activeElement && document.activeElement.tagName === 'INPUT') return;
+      const opts = Array.from(document.querySelectorAll('.option'));
+      if(opts.length === 0) return;
+
+      const idx = opts.indexOf(document.activeElement);
+      if(ev.key === 'ArrowDown' || ev.key === 'ArrowRight'){
+        ev.preventDefault();
+        const next = (idx >= 0 && idx < opts.length-1) ? opts[idx+1] : opts[0];
+        next.focus();
+      } else if(ev.key === 'ArrowUp' || ev.key === 'ArrowLeft'){
+        ev.preventDefault();
+        const prev = (idx > 0) ? opts[idx-1] : opts[opts.length-1];
+        prev.focus();
+      } else if(ev.key === 'Enter' || ev.key === ' '){
+        if(idx >= 0){
+          ev.preventDefault();
+          opts[idx].click();
+        }
+      } else if(ev.key === 'PageDown'){
+        goNext();
+      } else if(ev.key === 'PageUp'){
+        goPrev();
+      }
+    }
+
+    /* ================== Init confetti (lightweight) ================== */
+    const REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function initConfetti(){
+      if(REDUCED_MOTION) return;
+      const canvas = document.getElementById('confetti-canvas');
+      const ctx = canvas.getContext('2d');
+      let raf;
+      function setSize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+      setSize(); window.addEventListener('resize', setSize);
+
+      const isMobile = window.innerWidth <= 480 || /Mobi|Android/i.test(navigator.userAgent);
+      const count = isMobile ? 36 : 96;
+      const duration = isMobile ? 3500 : 6000;
+      const colors = ['#d4af37','#dca399','#f5f0eb','#bfa02c','#e5a99e'];
+      const parts = [];
+      for(let i=0;i<count;i++){
+        parts.push({
+          x: Math.random()*canvas.width,
+          y: -Math.random()*canvas.height,
+          size: Math.random()*8+4,
+          color: colors[Math.floor(Math.random()*colors.length)],
+          vx: Math.random()*2-1,
+          vy: Math.random()*3+2,
+          rot: Math.random()*360,
+          vr: Math.random()*4-2
+        });
+      }
+
+      function loop(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        let alive = false;
+        parts.forEach(p=>{
+          p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+          ctx.save();
+          ctx.translate(p.x,p.y);
+          ctx.rotate(p.rot*Math.PI/180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+          ctx.restore();
+          if(p.y < canvas.height + 20) alive = true;
+        });
+        if(alive) raf = requestAnimationFrame(loop);
+      }
+      loop();
+      setTimeout(()=>{
+        cancelAnimationFrame(raf);
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+      }, duration);
+    }
+
+    /* ================== Other utilities: copy, download, etc. ================== */
+    // Attach event listeners delegated for finish buttons generated dynamically
+    document.addEventListener('click', function(e){
+      if(e.target && e.target.id === 'finishWhatsapp'){ prepareWhatsApp(); }
+      if(e.target && e.target.id === 'finishEmail'){ prepareEmail(); }
+      if(e.target && e.target.id === 'finishCopy'){ copySummary(); }
+    });
+
+    /* ================== INITIAL LOAD ================== */
+    init();
+
+    // make sure to save state periodically
+    setInterval(saveProgress, 2000);
+
+    // expose a few helpers for debugging (dev convenience)
+    window._quiz = { questions, getState: ()=>({currentIndex,answers}) };
+
+  </script>
+</body>
+</html>
